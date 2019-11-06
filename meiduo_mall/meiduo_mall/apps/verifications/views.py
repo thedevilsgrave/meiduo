@@ -23,7 +23,7 @@ class ImageCodeView(APIView):
         # 生成验证码图片
         text, image = captcha.generate_captcha()
 
-        # 获取redis的连接对象
+        # 获取redis的连接对象"""""
         redis_conn = get_redis_connection("verify_codes")
         redis_conn.setex("img_%s" % image_code_id, constants.IMAGE_CODE_REDIS_EXPIRES, text)
 
