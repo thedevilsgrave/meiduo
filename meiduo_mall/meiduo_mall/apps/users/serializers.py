@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django_redis import get_redis_connection
+from rest_framework_jwt.settings import api_settings
 from redis.exceptions import RedisError
 import re
 import logging
@@ -61,6 +62,17 @@ class CreateUserSerializer(serializers.ModelSerializer):
         # 调用django的认证系统加密密码
         user.set_password(validated_data['password'])
         user.save()
+
+        # 手动为用户生成JWT-token
+        # 补充生成记录登录状态的token
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+
+        # 将token保存到用户对象中,随着返回值返回给前端
+        user.token = token
 
         return user
 

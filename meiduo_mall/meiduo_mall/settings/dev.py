@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
-
+import datetime
 import os
 import sys
 
@@ -30,7 +30,10 @@ SECRET_KEY = '&+q5st03g9)81))xki7gyznnu_3f$15ovxwq@i2h0(cinq3v$4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "www.meiduo.site",
+    "api.meiduo.site",
+]
 
 
 # Application definition
@@ -208,14 +211,31 @@ LOGGING = {
 REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'meiduo_mall.utils.exceptions.exception_handler',
+
+    # 认证机制后端
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+
+}
+JWT_AUTH = {
+    # 配置token的有效期
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+
+    # 配置JWT的返回值
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
 }
 
 # Django认证系统使用的模型类
 AUTH_USER_MODEL = 'users.User'
 
-# CORS_ORIGIN_WHITELIST = (
-#     '127.0.0.1:8080',
-#     'localhost:8080',
-#     'www.meiduo.site:8080'
-# )
-# CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+CORS_ORIGIN_WHITELIST = (
+    'https://127.0.0.1:8080',
+    'https://localhost:8080',
+    'https://www.meiduo.site:8000',
+    'https://127.0.0.1:63342',
+    'https://localhost:63342',
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
