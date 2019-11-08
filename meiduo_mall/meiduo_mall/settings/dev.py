@@ -97,7 +97,10 @@ DATABASES = {
     }
 }
 
-
+# django认证后端
+AUTHENTICATION_BACKENDS = [
+    'users.utils.UserNameMobileAuthenticate',
+]
 
 # Redis
 CACHES = {
