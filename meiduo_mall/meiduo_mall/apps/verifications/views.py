@@ -11,6 +11,9 @@ from . import constants
 from . import serializers
 from meiduo_mall.libs.yuntongxun.sms import CCP
 from celery_tasks.sms.tasks import send_sms_code
+from users.models import User
+
+
 # Create your views here.
 
 
@@ -18,8 +21,8 @@ class ImageCodeView(APIView):
     """
     图片验证码
     """
-    def get(self, request, image_code_id):
 
+    def get(self, request, image_code_id):
         # 生成验证码图片
         text, image = captcha.generate_captcha()
 
@@ -66,15 +69,49 @@ class SMSCodeView(GenericAPIView):
         return Response({'message': 'OK'})
 
 
+class SmsCodeByToken(APIView):
+    """根据access_token发送短息验证码"""
 
+    def get(self, request):
 
+        # 校验并获取token
+        access_token = request.query_params.get("access_token")
+        if not access_token:
+            return Response({"message": "缺少access_token"}, status=400)
 
+        # 从token中取出手机号
+        mobile = User.check_access_token(access_token)
+        if not mobile:
+            return Response({"message": "无效的access_token"}, status=400)
 
+        # 判断手机验证码发送频繁
+        redis_conn = get_redis_connection('verify_codes')
+        send_flag = redis_conn.get('send_flag_%s' % mobile)
+        if send_flag:
+            return Response({"message": "发送短息过于频繁"}, status=429)
 
+        # 生成短息验证并保存发送
+        # 生成短信验证码
+        sms_code = '%06d' % random.randint(0, 999999)
 
+        # 保存验证码及发送记录
+        redis_conn = get_redis_connection('verify_codes')
+        # redis_conn.setex('sms_%s' % mobile, constants.SMS_CODE_REDIS_EXPIRES, sms_code)
+        # redis_conn.setex('send_flag_%s' % mobile, constants.SEND_SMS_CODE_INTERVAL, 1)
 
+        # 使用redis的pipeline管道一次执行多个命令
+        pl = redis_conn.pipeline()
+        pl.setex('sms_%s' % mobile, constants.SMS_CODE_REDIS_EXPIRES, sms_code)
+        pl.setex('send_flag_%s' % mobile, constants.SEND_SMS_CODE_INTERVAL, 1)
+        # 让管道执行命令
+        pl.execute()
 
+        # 发送短信
+        # ccp = CCP()
+        # time = str(constants.SMS_CODE_REDIS_EXPIRES / 60)
+        # ccp.send_template_sms(mobile, [sms_code, time], constants.SMS_CODE_TEMP_ID)
+        # 使用celery发布异步任务
+        send_sms_code.delay(mobile, sms_code)
 
-
-
-
+        # 返回
+        return Response({'message': 'OK'})

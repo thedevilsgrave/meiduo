@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from itsdangerous import TimedJSONWebSignatureSerializer as TJWSSerializer
+from itsdangerous import TimedJSONWebSignatureSerializer as TJWSSerializer, BadData
 from meiduo_mall.settings.dev import SECRET_KEY
 
 # Create your models here.
@@ -25,10 +25,17 @@ class User(AbstractUser):
         token = serializer.dumps(data)
         return token.decode()
 
-
-
-
-
-
+    @staticmethod
+    def check_access_token(token):
+        """校验access_token"""
+        # 创建is_dangerous转换工具
+        serializer = TJWSSerializer(SECRET_KEY, expires_in=constants.SEND_SMS_TOKEN_EXPIRES)
+        try:
+            data = serializer.loads(token)
+        except BadData:
+            return None
+        else:
+            mobile = data.get("mobile")
+            return mobile
 
 
