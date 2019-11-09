@@ -73,8 +73,22 @@ var vm = new Vue({
                     .catch(error => {
                         this.error_pwd_message = '用户名或密码错误';
                         this.error_pwd = true;
-                })
+                    })
             }
+        },
+        // qq登录
+        qq_login: function () {
+            var state = this.get_query_string('next') || '/';
+            axios.get(this.host + '/oauth/oauth/qq/authorization/?state=' + state, {
+                responseType: 'json'
+            })
+                .then(response => {
+                    // 在这里引导用户跳转到QQ登录页面
+                    location.href = response.data.oauth_url;
+                })
+                .catch(error => {
+                    console.log(error.response.data);
+                })
         },
     }
 });
