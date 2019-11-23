@@ -11,4 +11,7 @@ urlpatterns = [
     re_path(r"accounts/(?P<account>\w{5,20})/sms/token/", views.SmsCodeTokenView.as_view()),        # 获取短息验证码的token
     re_path(r"accounts/(?P<account>\w{5,20})/password/token/", views.PasswordTokenView.as_view()),  # 修改密码的token
     re_path(r"users/(?P<pk>\d+)/password/", views.ModifyPasswordView.as_view()),  # 修改密码的token
+    re_path(r"^user/$", views.UserDetailView.as_view()),
+    re_path(r"emails/", views.EmailView.as_view()),
+    re_path(r"emails/verification/", views.VerifyEmailView.as_view()),
 ]

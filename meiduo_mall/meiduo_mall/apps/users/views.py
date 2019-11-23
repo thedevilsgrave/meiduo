@@ -1,10 +1,13 @@
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView,GenericAPIView
+from rest_framework import status
+from rest_framework.generics import CreateAPIView,GenericAPIView, RetrieveAPIView, UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import re
 from rest_framework.mixins import UpdateModelMixin
 
+from users.serializers import UserDetailSerializer
 from . import serializers
 from .models import User
 from verifications.serializers import CheckImageCodeSerialzier
@@ -106,3 +109,44 @@ class ModifyPasswordView(UpdateModelMixin, GenericAPIView):
 
     def post(self, request, pk):
         return self.update(request, pk)
+
+
+class UserDetailView(RetrieveAPIView):
+    """用户详细信息"""
+
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """返货请求的用户对象"""
+
+        return self.request.user
+
+
+class EmailView(UpdateAPIView):
+    """保存邮箱"""
+    serializer_class = serializers.EmailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+
+class VerifyEmailView(APIView):
+    """
+    邮箱验证
+    """
+    def get(self, request):
+        # 获取token
+        token = request.query_params.get('token')
+        if not token:
+            return Response({'message': '缺少token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 验证token
+        user = User.check_verify_email_token(token)
+        if user is None:
+            return Response({'message': '链接信息无效'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user.email_active = True
+            user.save()
+            return Response({'message': 'OK'})
