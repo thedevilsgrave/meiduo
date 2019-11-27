@@ -33,6 +33,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "www.meiduo.site",
     "api.meiduo.site",
+    '127.0.0.1',
 ]
 
 
@@ -46,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'ckeditor',  # 富文本编辑器
+    'ckeditor_uploader',  # 富文本编辑器上传图片模块
     'corsheaders',
     'users.apps.UsersConfig',
     'verifications.apps.VerificationsConfig',
@@ -270,3 +273,19 @@ REST_FRAMEWORK_EXTENSIONS = {
     # 缓存存储
     'DEFAULT_USE_CACHE': 'default',
 }
+
+DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fast_DSF.fast_storage.FastDFSStorage'
+
+# FastDFS
+FDFS_URL = 'http://192.168.0.104:8888/'  # 访问图片的路径域名 ip地址修改为自己机器的ip地址
+FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fast_DSF/client.conf')
+
+# 富文本编辑器ckeditor配置
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',  # 工具条功能
+        'height': 300,  # 编辑器高度
+        # 'width': 300,  # 编辑器宽
+    },
+}
+CKEDITOR_UPLOAD_PATH = ''   # 上传图片保存路径，使用了FastDFS，所以此处设为''
