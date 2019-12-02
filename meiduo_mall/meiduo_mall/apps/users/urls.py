@@ -14,4 +14,5 @@ urlpatterns = [
     re_path(r"^user/$", views.UserDetailView.as_view()),
     re_path(r"emails/", views.EmailView.as_view()),
     re_path(r"emails/verification/", views.VerifyEmailView.as_view()),
+    re_path(r"browse_histories/", views.UserBrowsingHistoryView.as_view()),
 ]

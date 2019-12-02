@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import status
+from django_redis import get_redis_connection
+from rest_framework import status, mixins
 from rest_framework.generics import CreateAPIView,GenericAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,7 +8,9 @@ from rest_framework.views import APIView
 import re
 from rest_framework.mixins import UpdateModelMixin
 
-from users.serializers import UserDetailSerializer
+from goods.models import SKU
+from goods.serializers import SKUSerializer
+from users.serializers import UserDetailSerializer, AddUserBrowsingHistorySerializer
 from . import serializers
 from .models import User
 from verifications.serializers import CheckImageCodeSerialzier
@@ -150,3 +153,31 @@ class VerifyEmailView(APIView):
             user.email_active = True
             user.save()
             return Response({'message': 'OK'})
+
+
+class UserBrowsingHistoryView(mixins.CreateModelMixin, GenericAPIView):
+    """
+    用户浏览历史记录
+    """
+    serializer_class = AddUserBrowsingHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        保存
+        """
+        return self.create(request)
+
+    def get(self, request, user_id):
+        """
+        获取
+        """
+        redis_conn = get_redis_connection("default")
+        history = redis_conn.lrange("history_%s" % user_id, 0, 5)
+        skus = []
+        for sku_id in history:
+            sku = SKU.objects.get(id=sku_id)
+            skus.append(sku)
+
+        s = SKUSerializer(skus, many=True)
+        return Response(s.data)
