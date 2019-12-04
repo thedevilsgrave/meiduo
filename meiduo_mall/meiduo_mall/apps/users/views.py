@@ -7,7 +7,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import re
 from rest_framework.mixins import UpdateModelMixin
+from rest_framework_jwt.views import ObtainJSONWebToken
 
+from carts.utils import merge_cart_cookie_to_redis
 from goods.models import SKU
 from goods.serializers import SKUSerializer
 from users.serializers import UserDetailSerializer, AddUserBrowsingHistorySerializer
@@ -181,3 +183,30 @@ class UserBrowsingHistoryView(mixins.CreateModelMixin, GenericAPIView):
 
         s = SKUSerializer(skus, many=True)
         return Response(s.data)
+
+class UserAuthorizeView(ObtainJSONWebToken):
+    """
+    用户认证
+    """
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data.get('user') or request.user
+            response = merge_cart_cookie_to_redis(request, user, response)
+
+        return response
+
+
+
+
+
+
+
+
+
+
+
+
+

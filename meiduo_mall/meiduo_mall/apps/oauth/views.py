@@ -1,4 +1,6 @@
 from django.shortcuts import render
+
+from carts.utils import merge_cart_cookie_to_redis
 from .utils import OAuthQQ
 from .models import OauthUser
 # Create your views here.
@@ -71,4 +73,5 @@ class QQAuthUserView(APIView):
                 'user_id': user.id,
                 'username': user.username
             })
+            response = merge_cart_cookie_to_redis(request, user, response)
             return response

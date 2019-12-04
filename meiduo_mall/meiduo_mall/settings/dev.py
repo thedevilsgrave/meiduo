@@ -47,16 +47,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'ckeditor',  # 富文本编辑器
-    'ckeditor_uploader',  # 富文本编辑器上传图片模块
-    'corsheaders',
-    'haystack',   # 搜索引擎
     'users.apps.UsersConfig',
     'verifications.apps.VerificationsConfig',
     'oauth.apps.OauthConfig',
     'areas.apps.AreasConfig',
     'advertising.apps.AdvertisingConfig',
     'goods.apps.GoodsConfig',
+    'carts.apps.CartsConfig',
+    'ckeditor',  # 富文本编辑器
+    'ckeditor_uploader',  # 富文本编辑器上传图片模块
+    'corsheaders',
+    'haystack',   # 搜索引擎
     'django_crontab',  # 定时任务
 ]
 
@@ -133,7 +134,14 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
-    }
+    },
+    "cart": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
