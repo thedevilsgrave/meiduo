@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'advertising.apps.AdvertisingConfig',
     'goods.apps.GoodsConfig',
     'carts.apps.CartsConfig',
+    'orders.apps.OrdersConfig',
     'ckeditor',  # 富文本编辑器
     'ckeditor_uploader',  # 富文本编辑器上传图片模块
     'corsheaders',
